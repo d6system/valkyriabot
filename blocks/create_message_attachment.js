@@ -56,6 +56,7 @@ module.exports = {
                 "json": ".json",
                 "png": ".png",
                 "jpg": ".jpg",
+                "html": ".html",
                 "gif": ".gif",
                 "custom": "Custom Extension"
             }
@@ -101,6 +102,9 @@ module.exports = {
                 break;
             case "gif":
                 extension = ".gif"
+                break;
+            case "html":
+                extension = ".html"
                 break;
             case "custom": {
                 const custom = this.GetInputValue("custom_file_extension", cache) + "";

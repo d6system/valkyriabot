@@ -213,7 +213,7 @@ module.exports = {
         }
 
         let command_name = this.GetOptionValue("command_name", cache);
-        const custom_prefix = this.GetInputValue("custom_prefix", cache, true);
+        const custom_prefix = this.GetOptionValue("custom_prefix", cache, true);
         let command_slowmode = this.GetInputValue("command_slowmode", cache);
         const command_restriction = this.GetOptionValue("command_restriction", cache) + "";
         const required_member_permission = permissions[this.GetOptionValue("required_member_permission", cache) + ""];

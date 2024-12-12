@@ -71,7 +71,6 @@ module.exports = {
         this.client.guilds.cache.forEach((guild) => {
             guild.invites.fetch().then(firstInvites => {
                 invites.set(guild.id, new Collection(firstInvites.map((invite) => [invite.code, invite.uses])));
-                console.log(invites)
             });
         });
 

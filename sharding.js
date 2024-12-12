@@ -19,7 +19,7 @@ if (!token) {
 }
 
 if (token) {
-    const manager = new ShardingManager(`./bot.js`, { token })
+    const manager = new ShardingManager('./bot.js', { token })
     manager.spawn()
 } else {
     console.error('There is no bot token. Please set it in the "token.txt" or ".env" file.')

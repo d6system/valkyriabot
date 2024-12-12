@@ -1,151 +1,143 @@
 module.exports = {
     name: "Discord Commands Manager [Dependency]",
 
-    description: "Starts the Discord Commands Manager dependency required for other related blocks to work.",
+    description:
+        "Starts the Discord Commands Manager dependency required for other related blocks to work.",
 
     category: "Dependencies",
 
-    inputs: [],
+    init(DBB, blockName) {
+        const { ApplicationCommandOptionType, ApplicationCommandType } = require("discord.js")
 
-    options: [],
-
-    outputs: [],
-
-    init(DBB) {
-        if (!DBB.Dependencies.DiscordCommands) {
-            const newCommands = {
-                globals: undefined,
-                servers: {}
+        class CommandsTimer {
+            constructor(ms, callback) {
+                this.commands = []
+                this.timer = setTimeout(callback, ms)
             }
 
-            const { commands } = DBB.DiscordJS.client.application
-
-            commands.fetch({ withLocalizations: true })
-
-            const startSendingCommands = function(serverId) {
-                setTimeout(() => {
-                    let newCmds
-
-                    if (serverId) {
-                        newCmds = newCommands.servers[serverId]
-                        newCommands.servers[serverId] = undefined
-                    } else {
-                        newCmds = newCommands.globals
-                        newCommands.globals = undefined
-                    }
-
-                    const firstCommand = newCmds[0]
-
-                    if (newCmds.length == 1 && typeof firstCommand != 'function') {
-                        switch (typeof firstCommand) {
-                            case 'function': {
-                                const foundCmd = commands.cache.find(firstCommand)
-                                if (foundCmd) commands.delete(foundCmd.id)
-                                break;
-                            }
-                            case 'string': {
-                                commands.delete(firstCommand)
-                                break;
-                            }
-                            case 'object':
-                                commands.create(firstCommand)
-                                break;
-                        }
-                    } else {
-                        const finalData = []
-
-                        let firstCmdAdded = false
-
-                        for (const [id, cmd] of commands.cache) {
-                            if ((serverId && cmd.guildId != serverId) || (!serverId && cmd.guildId))
-                                continue
-
-                            switch (typeof firstCommand) {
-                                case 'function': {
-                                    if (!firstCommand(cmd))
-                                        finalData.push(cmd)
-                                    break;
-                                }
-                                case 'string': {
-                                    if (firstCommand != id)
-                                        finalData.push(cmd)
-                                    break;
-                                }
-                                case 'object':
-                                    if (cmd.name == firstCommand.name) {
-                                        firstCmdAdded = true
-                                        finalData.push(firstCommand)
-                                    } else
-                                        finalData.push(cmd)
-                                    break;
-                            }
-                        }
-
-                        if (!firstCmdAdded && typeof firstCommand == 'object')
-                            finalData.push(firstCommand)
-
-                        for (let i = 1; i < newCmds.length; i++) {
-                            const newCmd = newCmds[i]
-
-                            switch (typeof newCmd) {
-                                case 'function': {
-                                    const existingCmdIndex = finalData.findIndex(newCmd)
-                                    
-                                    if (existingCmdIndex)
-                                        finalData.splice(existingCmdIndex, 1)
-
-                                    break;
-                                }
-                                case 'string': {
-                                    const existingCmdIndex = finalData.findIndex(cmd => cmd.id == newCmd)
-
-                                    if (existingCmdIndex)
-                                        finalData.splice(existingCmdIndex, 1)
-                                    
-                                    break;
-                                }
-                                case 'object': {
-                                    const existingCmdIndex = finalData.findIndex(cmd => cmd.name == newCmd.name)
-
-                                    if (existingCmdIndex < 0)
-                                        finalData.push(newCmd)
-                                    else
-                                        finalData[existingCmdIndex] = newCmd
-                                    
-                                    break;
-                                }
-                            }
-                        }
-
-                        commands.set(finalData, serverId)
-                    }
-                }, 3000)
-            }
-
-            DBB.Dependencies.DiscordCommands = {
-                create(command, serverId) {
-                    if (serverId) {
-                        if (newCommands.servers[serverId])
-                            newCommands.servers[serverId].push(command)
-                        else {
-                            newCommands.servers[serverId] = [command]
-                            startSendingCommands(serverId)
-                        }
-                    } else {
-                        if (newCommands.globals)
-                            newCommands.globals.push(command)
-                        else {
-                            newCommands.globals = [command]
-                            startSendingCommands()
-                        }
-                    }
-                },
-                delete(idOrFunc, serverId) {
-                    this.create(idOrFunc, serverId)
-                }
+            addCommand(command) {
+                this.commands.push(command)
             }
         }
-    },
 
-    code() {}
+        DBB.Core.setDependency("DiscordCommands", blockName, {
+            TIMEOUT: 3000,
+
+            _tempData: {
+                global: undefined,
+                servers: new Map()
+            },
+
+            create(data, serverId) {
+                if (serverId) {
+                    let serverData = this._tempData.servers.get(serverId)
+                    if (!serverData) {
+                        serverData = new CommandsTimer(this.TIMEOUT, () => {
+                            this.sendCommands(serverId)
+                            this._tempData.servers.delete(serverId)
+                        })
+                        this._tempData.servers.set(serverId, serverData)
+                    }
+                    serverData.addCommand(data)
+                } else {
+                    const globalData = (this._tempData.global ??= new CommandsTimer(
+                        this.TIMEOUT,
+                        () => {
+                            this.sendCommands()
+                            this._tempData.global = undefined
+                        }
+                    ))
+                    globalData.addCommand(data)
+                }
+            },
+
+            sendCommands(serverId) {
+                const commandsTimer = serverId
+                    ? this._tempData.servers.get(serverId)
+                    : this._tempData.global
+                if (!commandsTimer) return
+
+                const discordCommands = DBB.DiscordJS.client.application.commands
+
+                const commands = discordCommands.cache.reduce((map, command) => {
+                    const randomId =
+                        command.type === ApplicationCommandType.ChatInput ? "" : command.type
+                    return map.set(command.name + randomId, command)
+                }, new Map())
+
+                for (const command of commandsTimer.commands) {
+                    if (
+                        command.type !== undefined &&
+                        command.type !== ApplicationCommandType.ChatInput
+                    ) {
+                        commands.set(command.name + command.type, command)
+                        continue
+                    }
+
+                    const [commandName, subcommandName, subcommandName2] = command.name
+                        .trim()
+                        .toLowerCase()
+                        .split(/\s+/, 3)
+
+                    // Command
+                    let existingCommand = commands.get(commandName)
+                    if (!existingCommand) {
+                        existingCommand = {
+                            name: commandName,
+                            description: " ឵",
+                            options: []
+                        }
+                        commands.set(commandName, existingCommand)
+                    }
+
+                    if (subcommandName) {
+                        const { name, description, options, ...rest } = command
+                        Object.assign(existingCommand, rest)
+                    } else {
+                        Object.assign(existingCommand, command)
+                        continue
+                    }
+
+                    // Subcommand 1
+                    let existingSubcommand = existingCommand.options.find(
+                        (option) => option.name === subcommandName
+                    )
+                    if (!existingSubcommand) {
+                        existingSubcommand = {
+                            name: subcommandName,
+                            description: " ឵",
+                            options: []
+                        }
+                        existingCommand.options.push(existingSubcommand)
+                    }
+
+                    if (subcommandName2) {
+                        existingSubcommand.type = ApplicationCommandOptionType.SubcommandGroup
+                    } else {
+                        Object.assign(existingSubcommand, command, {
+                            name: subcommandName
+                        })
+                        existingSubcommand.type = ApplicationCommandOptionType.Subcommand
+                        continue
+                    }
+
+                    // Subcommand 2
+                    let existingSubcommand2 = existingSubcommand.options.find(
+                        (option) => option.name === subcommandName2
+                    )
+                    if (!existingSubcommand2) {
+                        existingSubcommand2 = {}
+                        existingSubcommand.options.push(existingSubcommand2)
+                    }
+
+                    Object.assign(existingSubcommand2, command, {
+                        name: subcommandName2
+                    })
+                    existingSubcommand2.type = ApplicationCommandOptionType.Subcommand
+                }
+
+                discordCommands.set(Array.from(commands.values()), serverId)
+            }
+        })
+    }
 }

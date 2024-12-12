@@ -16,7 +16,7 @@ module.exports = {
             id: "interaction",
             name: "Interaction",
             description: "Type: Object\n\nDescription: The Title of Your Application",
-            types: ["object"],
+            types: ["object", "unspecified"],
             required: true
         },
         {

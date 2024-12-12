@@ -1,11 +1,4 @@
 {
-    "dbb": {
-        "prefixes": {
-            "main": "v!",
-            "servers": {}
-        },
-        "owners": []
-    },
     "discord": {
         "servers": {},
         "members": {},

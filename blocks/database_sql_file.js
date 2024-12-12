@@ -1,7 +1,7 @@
 module.exports = {
-    name: "Database SQL Conf",
+    name: "Database SQL File",
 
-    description: "This block is used to establish a connection with a SQL database. Created by @ju#1111",
+    description: "This block is used to establish a connection with a SQL database. Created by @ju#1111. Updated by d6system",
 
     category: "Database Stuff",
 
@@ -26,8 +26,8 @@ module.exports = {
 		{
             "id": "port",
             "name": "Port",
-            "description": "Acceptable Types: Number, Unspecified\n\nDescription: The port number for the SQL database connection. Defaults to '3306' if not specified. Ports under 1000 are reserved for root (Linux), so it is not recommended to use them.",
-            "types": ["number", "unspecified"]
+            "description": "Acceptable Types: Text, Unspecified\n\nDescription: The port number for the SQL database connection. Defaults to '3306' if not specified. Ports under 1000 are reserved for root (Linux), so it is not recommended to use them.",
+            "types": ["text", "unspecified"]
         },  
 		{
             "id": "user",
@@ -35,16 +35,16 @@ module.exports = {
             "description": "Acceptable Types: Text, Unspecified\n\nDescription: The username to authenticate the SQL database connection.",
             "types": ["text", "unspecified"]
         },  
+        {
+            "id": "password",
+            "name": "Password input",
+            "description": "Acceptable Types: Text, Unspecified\n\nDescription: The path of the file (e.g. \"E:\\myFolder\\data.json\").",
+            "types": ["text", "unspecified"]
+        },
 		{
             "id": "database",
             "name": "Database",
             "description": "Acceptable Types: Text, Unspecified\n\nDescription: The name of the SQL database to connect to.",
-            "types": ["text", "unspecified"]
-        },
-        {
-            "id": "file_path",
-            "name": "File with pass",
-            "description": "Acceptable Types: Text, Unspecified\n\nDescription: The path of the file (e.g. \"E:\\myFolder\\data.json\").",
             "types": ["text", "unspecified"]
         }		
     ],
@@ -63,21 +63,25 @@ module.exports = {
     async code(cache) {
 		await this.require('mysql2');
 		const mysql = require('mysql2/promise');
-  const file_path = this.GetInputValue("file_path", cache) + "";
+		const hostinput = this.GetInputValue("host", cache) + "";
+		const portinput = this.GetInputValue("port", cache) + "";
+		const userinput = this.GetInputValue("user", cache) + "";
+		const pwdinput = this.GetInputValue("password", cache) + "";
+  		const dbinput = this.GetInputValue("database", cache) + "";
         const fs = require("fs");
-		const password = fs.readFileSync(file_path, "utf8");
+
 		const con = await mysql.createPool({
-				host: this.GetInputValue("host", cache),
-				port: this.GetInputValue("port", cache),
-				user: this.GetInputValue("user", cache),
-				password: fs.readFileSync(file_path, "utf8"),
-				database: this.GetInputValue("database", cache),
+				host: fs.readFileSync(hostinput, "utf8"),
+				port: fs.readFileSync(portinput, "utf8"),
+				user: fs.readFileSync(userinput, "utf8"),
+				password: fs.readFileSync(pwdinput, "utf8"),
+				database: fs.readFileSync(dbinput, "utf8"),
                 waitForConnections: true,
                 connectionLimit: 10,
                 queueLimit: 0
 		});
-		
 		this.getDBB().database.initdb(con)
-        this.RunNextBlock("action", cache);       
+        this.RunNextBlock("action", cache); 	
+   
     }
 }
