@@ -203,7 +203,7 @@
                 },
                 "info": {
                     "x": 0,
-                    "y": 950,
+                    "y": 970,
                     "z": 79,
                     "width": 579,
                     "height": 465,
@@ -852,39 +852,6 @@
                 }
             },
             {
-                "name": "better_send_message_v14",
-                "inputs": {
-                    "action": "mjS0kyZS9H",
-                    "channel": "NTeHT6SNMP",
-                    "embed": "W75QmPkwIq",
-                    "attachment": "rU09RmpzBQ",
-                    "text1": "kJOsnNx589",
-                    "text2": "ucc9XkGzCG",
-                    "text3": "UVrPUkSzOd",
-                    "text4": "H9tUQkjAIl",
-                    "text5": "VOnmMdKy9T",
-                    "menu": "ZKRMtt7kLm",
-                    "button": "vZg2K1WRHH",
-                    "button_row": "yg8Nl0ZGDo"
-                },
-                "options": {
-                    "text": "Bot bound to current server.\nPlease configure the bot to your liking.\nBlue means mandatory for the rest of the bot to work.\nGrey are optional."
-                },
-                "outputs": {
-                    "action": [],
-                    "message": [],
-                    "error": []
-                },
-                "info": {
-                    "x": 2890,
-                    "y": 690,
-                    "z": 0,
-                    "width": 415,
-                    "height": 372,
-                    "color": ""
-                }
-            },
-            {
                 "name": "create_button",
                 "inputs": {
                     "action": "GavHNY5p7g",
@@ -1044,7 +1011,6 @@
                         "fCs5lnYEzk"
                     ],
                     "channel": [
-                        "NTeHT6SNMP",
                         "ULvj4aolbu",
                         "2bRmtmIY9l"
                     ],
@@ -1055,7 +1021,7 @@
                 },
                 "info": {
                     "x": 0,
-                    "y": 270,
+                    "y": 280,
                     "z": 0,
                     "width": 650,
                     "height": 344,
@@ -1132,10 +1098,10 @@
                 },
                 "info": {
                     "x": 680,
-                    "y": 1040,
+                    "y": 1250,
                     "z": 0,
                     "width": 425,
-                    "height": 550,
+                    "height": 340,
                     "color": ""
                 }
             },
@@ -1561,8 +1527,8 @@
                     ]
                 },
                 "info": {
-                    "x": 3370,
-                    "y": 440,
+                    "x": 2180,
+                    "y": 540,
                     "z": 0,
                     "width": 238,
                     "height": 268,
@@ -3100,8 +3066,8 @@
                     "action": []
                 },
                 "info": {
-                    "x": 4293,
-                    "y": 571,
+                    "x": 2170,
+                    "y": 810,
                     "z": 0,
                     "width": 238,
                     "height": 268,
